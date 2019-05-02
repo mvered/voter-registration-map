@@ -1,6 +1,7 @@
 # Load libraries for app
 library(shiny)
 library(leaflet)
+library(shinyWidgets)
 
 # Define UI for app
 ui <- fluidPage (
@@ -12,7 +13,40 @@ ui <- fluidPage (
   sidebarLayout(
     
     # Sidebar panel for inputs
-    sidebarPanel(),
+    sidebarPanel(
+      checkboxGroupInput(inputId="Organizations",
+                         label="Organizations",
+                         choices = list("Forward MT",
+                                   "Montana Women Vote",
+                                   "MontPIRG",
+                                   "Western Native Voice"),
+                         selected = list("Forward MT",
+                                         "Montana Women Vote",
+                                         "MontPIRG",
+                                         "Western Native Voice")
+      ),
+      sliderTextInput(inputId="Frequency",
+                  label="Frequency of Use",
+                  grid=TRUE,
+                  choices = c("Annually","Monthly","Weekly","Continuously")
+        
+      ),
+      checkboxGroupInput(inputId="Types",
+                         label="Location Types",
+                         choices = list("Canvass",
+                                        "Community Hot Spot",
+                                        "Drop Box",
+                                        "Event",
+                                        "Office",
+                                        "School"),
+                         selected = list("Canvass",
+                                         "Community Hot Spot",
+                                         "Drop Box",
+                                         "Event",
+                                         "Office",
+                                         "School")
+      )
+    ),
     
     # Main panel for displaying outputs
     mainPanel(
