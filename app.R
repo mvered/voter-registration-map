@@ -54,7 +54,7 @@ ui <- fluidPage (
       # Ouput: Tabset
       tabsetPanel(type='tabs',
         tabPanel("Map",leafletOutput(outputId="vrMap",height=550)),
-        tabPanel("Placeholder")
+        tabPanel("Placeholder",textOutput(outputId="test"))
       )
   )
   )
@@ -66,23 +66,28 @@ server <- function(input,output){
   # load in VR location data
   vrLocations <- read.csv("voter-reg-locations.csv")
   
+  # Reactive expression for data subsetted to what the user selected
+  filteredData <- reactive({
+    vrLocations[vrLocations$Organization %in% input$Organizations, ]
+  })
+  
   # set icon color depending on organization
   getIconColor <- function(vrLocations) {
     sapply(vrLocations$Organization, function(Organization) {
-    if(Organization == 'Forward MT'){
-      "orange"
-    } else if(Organization =='MontPIRG'){
-      "blue"
-    }
+      if(Organization == 'Forward MT'){
+        "orange"
+      } else if(Organization =='MontPIRG'){
+        "blue"
+      }
       else if(Organization=='Montana Women Vote'){
-      "green"
-    }
+        "green"
+      }
       else if(Organization=='Western Native Voice'){
-       "yellow" 
-    }
+        "yellow" 
+      }
       else{
         "black"
-    } })
+      } })
   }
   
   # set icon type depending on type of VR location
@@ -111,17 +116,16 @@ server <- function(input,output){
   }
   
   # generate VR location icons
-  vrLocationIcons <- awesomeIcons(
-    icon = getIconType(vrLocations),
-    iconColor='black',
-    library='fa',
-    markerColor = getIconColor(vrLocations)
-  )
+  vrLocationIcons <- reactive({
+    awesomeIcons(
+      icon = getIconType(filteredData()),
+      iconColor='black',
+      library='fa',
+      markerColor = getIconColor(filteredData())
+    )})
   
-  # Reactive expression for data subsetted to what the user selected
-  filteredData <- reactive({
-    vrLocations[vrLocations$Organization %in% input$Organizations, ]
-  })
+  # test
+  output$test = renderPrint({filteredData()})
   
   # generate map output for vr locations
   output$vrMap <-renderLeaflet({
@@ -135,17 +139,16 @@ server <- function(input,output){
     proxy <- leafletProxy("vrMap", data=filteredData())
     proxy %>% clearMarkers()
     proxy %>%  addAwesomeMarkers(
-                          data=vrLocations,
                           ~Longitude,~Latitude, 
-                          icon=vrLocationIcons,
+                          icon=vrLocationIcons(),
                           popup= paste("<b>",
-                          vrLocations$Name,
+                          filteredData()$Name,
                           "</b><br>",
-                          vrLocations$Address,
+                          filteredData()$Address,
                           "<br>",
-                          vrLocations$City,
+                          filteredData()$City,
                           "MT ",
-                          vrLocations$Zip))
+                          filteredData()$Zip))
       
   })
 }
