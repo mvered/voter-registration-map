@@ -4,12 +4,16 @@ library(leaflet)
 library(shinyWidgets)
 library(dplyr)
 library(DT)
+library(shinythemes)
 
 # Define UI for app
-ui <- fluidPage (
+ui <- fluidPage (theme=shinytheme("flatly"),
   
   # App title
-  titlePanel("Voter Registration in Montana"),
+  #titlePanel("Voter Registration in Montana"),
+  
+  navbarPage("Voter Registration in Montana",
+  tabPanel("Planned VR Sites",
   
   # Sidebar layout with input and output definitions
   sidebarLayout(
@@ -17,7 +21,7 @@ ui <- fluidPage (
     # Sidebar panel for inputs
     sidebarPanel(
       # code to change slider bar display
-      # fills on right, from selected value to max, rather than default of min to selection
+      # fills on right, from selected value to max, rather than default fill of min to selection
       tags$head( tags$style( type = "text/css", '
       .irs-line-mid{
         background: #428bca ;
@@ -107,6 +111,9 @@ ui <- fluidPage (
         tabPanel("List of Locations",dataTableOutput(outputId="table"))
       )
   )
+  )
+  ),
+  tabPanel("Registration Gaps","Hello World"),id = "navbar"
   )
 )
 
