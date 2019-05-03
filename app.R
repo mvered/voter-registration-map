@@ -5,6 +5,7 @@ library(shinyWidgets)
 library(dplyr)
 library(DT)
 library(shinythemes)
+library(geojsonio)
 
 # Define UI for app
 ui <- fluidPage (theme=shinytheme("flatly"),
@@ -113,8 +114,21 @@ ui <- fluidPage (theme=shinytheme("flatly"),
   )
   )
   ),
-  tabPanel("Registration Gaps","Hello World"),id = "navbar"
-  )
+  tabPanel("Registration Gaps",
+           sidebarLayout(
+             sidebarPanel("Hello World"),
+             mainPanel(      # Ouput: Tabset
+               tabsetPanel(type='tabs',
+                           tabPanel("Map",leafletOutput(outputId="gapMap",height=550)),
+                           tabPanel("List","Hello World")
+                          )
+                       )
+           )
+           
+           
+  ),id = "navbar"
+  ),
+  tags$footer("Created May 2019 by Michelle Vered for Montana Voices.")
 )
 
 # Define server logic for app
@@ -251,6 +265,28 @@ server <- function(input,output){
                           filteredData()$Zip))
       
   })
+  
+  # load in county level voter registration and population data
+  counties <- geojsonio::geojson_read("county-data-simplified.geojson",what="sp")
+  
+  # colors for map polygons for chloropleth rendering
+  pal <- colorNumeric("viridis",NULL)
+  
+  # generate map output for vr gaps
+  output$gapMap <-renderLeaflet({
+    leaflet(counties) %>%
+      addTiles() %>%
+      setView(lng = -109.4282, lat = 47.0625, zoom = 6) %>%
+      addPolygons(stroke = FALSE, smoothFactor = 0.3, fillOpacity = 1,fillColor=~pal(Active))
+  })
+  
+  # observer to dynamically update gap data being displayed on map
+ #  observe({
+ #  proxygapMap <- leafletProxy("gapMap")
+#   proxygapMap %>% addPolygons(fillColor=~pal(Active))})
+  
+  
+  
 }
 
 shinyApp(server=server, ui=ui)
