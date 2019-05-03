@@ -3,6 +3,7 @@ library(shiny)
 library(leaflet)
 library(shinyWidgets)
 library(dplyr)
+library(DT)
 
 # Define UI for app
 ui <- fluidPage (
@@ -53,8 +54,7 @@ ui <- fluidPage (
       sliderTextInput(inputId="Frequency",
                   label="Frequency of Use",
                   grid=TRUE,
-                  choices = c("Annually",
-                              "Monthly","Weekly","Continuously"),
+                  choices = c("Annually","Monthly","Weekly","Continuously")
       ),
       
       # creates checkbox input for type of VR location
@@ -92,7 +92,7 @@ server <- function(input,output){
   
   # load in VR location data
   vrLocations <- read.csv("voter-reg-locations.csv")
-  
+
   # Reactive expression to provide list of frequencies to subset to
   frequencyList <- reactive({
     if(input$Frequency=='Annually'){
@@ -172,14 +172,30 @@ server <- function(input,output){
     )})
   
   # table output
-  output$table = renderDataTable({select(filteredData(),
+  output$table = renderDataTable({select(vrLocations,
                                          Name,
                                          Address,
                                          City,
                                          Zip,
                                          Organization,
                                          Type,
-                                         Frequency)})
+                                         Frequency)},
+                                 options = list(order=list(0,'asc')),
+                                 rownames=FALSE)
+  
+  # observer to dynamically update vrLocations in table
+  observe({
+    proxytable <- dataTableProxy("table")
+    proxytable %>% replaceData({select(filteredData(),
+            Name,
+            Address,
+            City,
+            Zip,
+            Organization,
+            Type,
+            Frequency)},
+            rownames=FALSE)
+  })
   
   # generate map output for vr locations
   output$vrMap <-renderLeaflet({
@@ -188,11 +204,11 @@ server <- function(input,output){
       setView(lng = -109.4282, lat = 47.0625, zoom = 6)
   })
   
-  # observer to dynamically update vrLocations being displayed
+  # observer to dynamically update vrLocations being displayed on map
   observe({
-    proxy <- leafletProxy("vrMap", data=filteredData())
-    proxy %>% clearMarkers()
-    proxy %>%  addAwesomeMarkers(
+    proxymap <- leafletProxy("vrMap", data=filteredData())
+    proxymap %>% clearMarkers()
+    proxymap %>%  addAwesomeMarkers(
                           ~Longitude,~Latitude, 
                           icon=vrLocationIcons(),
                           popup= paste("<b>",
