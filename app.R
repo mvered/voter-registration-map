@@ -16,18 +16,6 @@ ui <- fluidPage (
     
     # Sidebar panel for inputs
     sidebarPanel(
-      checkboxGroupInput(inputId="Organizations",
-                         label="Organizations",
-                         choices = list("Forward MT",
-                                   "Montana Women Vote",
-                                   "MontPIRG",
-                                   "Western Native Voice"),
-                         selected = list("Forward MT",
-                                         "Montana Women Vote",
-                                         "MontPIRG",
-                                         "Western Native Voice")
-      ),
-      
       # code to change slider bar display
       # fills on right, from selected value to max, rather than default of min to selection
       tags$head( tags$style( type = "text/css", '
@@ -48,7 +36,34 @@ ui <- fluidPage (
         border: inherit ;
       }
 
-    ')), 
+    '),
+      
+      # style for icons in organization check box input                      
+      tags$style(".fmt {color:#EE9900}"),
+      tags$style(".pirg {color:#41ABE2}"),
+      tags$style(".mwv {color:#72AD00}"),
+      tags$style(".wnv {color:#DA4521}")
+      ), 
+      
+      
+      checkboxGroupInput(inputId="Organizations",
+                         label="Organizations",
+                         choiceNames =
+                           list(HTML(paste("Forward MT ",icon("map-marker",class="fmt",lib="font-awesome"))),
+                              HTML(paste("Montana Women Vote ",icon("map-marker",class="mwv",lib="font-awesome"))),
+                              HTML(paste("MontPIRG ",icon("map-marker",class="pirg",lib="font-awesome"))),
+                              HTML(paste("Western Native Voice ",icon("map-marker",class="wnv",lib="font-awesome")))
+                            ),
+                         choiceValues = list("Forward MT",
+                                   "Montana Women Vote",
+                                   "MontPIRG",
+                                   "Western Native Voice"),
+                         selected = list("Forward MT",
+                                         "Montana Women Vote",
+                                         "MontPIRG",
+                                         "Western Native Voice")
+      ),
+    
       
       # creates slider bar input for frequency
       sliderTextInput(inputId="Frequency",
@@ -60,7 +75,15 @@ ui <- fluidPage (
       # creates checkbox input for type of VR location
       checkboxGroupInput(inputId="Types",
                          label="Location Types",
-                         choices = list("Canvass",
+                         choiceNames =
+                           list(HTML(paste("Canvass ",icon("home",lib="font-awesome"))),
+                                HTML(paste("Community Hot Spot ",icon("star",lib="font-awesome"))),
+                                HTML(paste("Drop Box ",icon("fab fa-dropbox",lib="font-awesome"))),
+                                HTML(paste("Event ",icon("calendar",lib="font-awesome"))),
+                                HTML(paste("Office ",icon("briefcase",lib="font-awesome"))),
+                                HTML(paste("School ",icon("graduation-cap",lib="font-awesome")))
+                                ),
+                         choiceValues = list("Canvass",
                                         "Community Hot Spot",
                                         "Drop Box",
                                         "Event",
