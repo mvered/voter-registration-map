@@ -2,6 +2,7 @@
 library(shiny)
 library(leaflet)
 library(shinyWidgets)
+library(dplyr)
 
 # Define UI for app
 ui <- fluidPage (
@@ -54,7 +55,7 @@ ui <- fluidPage (
       # Ouput: Tabset
       tabsetPanel(type='tabs',
         tabPanel("Map",leafletOutput(outputId="vrMap",height=550)),
-        tabPanel("Placeholder",textOutput(outputId="test"))
+        tabPanel("List of Locations",dataTableOutput(outputId="table"))
       )
   )
   )
@@ -124,8 +125,15 @@ server <- function(input,output){
       markerColor = getIconColor(filteredData())
     )})
   
-  # test
-  output$test = renderPrint({filteredData()})
+  # table output
+  output$table = renderDataTable({select(filteredData(),
+                                         Name,
+                                         Address,
+                                         City,
+                                         Zip,
+                                         Organization,
+                                         Type,
+                                         Frequency)})
   
   # generate map output for vr locations
   output$vrMap <-renderLeaflet({
