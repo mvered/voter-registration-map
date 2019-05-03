@@ -118,22 +118,35 @@ server <- function(input,output){
     markerColor = getIconColor(vrLocations)
   )
   
+  # Reactive expression for data subsetted to what the user selected
+  filteredData <- reactive({
+    vrLocations[vrLocations$Organization %in% input$Organizations, ]
+  })
+  
   # generate map output for vr locations
   output$vrMap <-renderLeaflet({
     leaflet() %>%
-    addTiles() %>% 
-    addAwesomeMarkers(data=vrLocations,
-               ~Longitude,~Latitude, 
-               icon=vrLocationIcons,
-               popup= paste("<b>",
-                            vrLocations$Name,
-                            "</b><br>",
-                            vrLocations$Address,
-                            "<br>",
-                            vrLocations$City,
-                            "MT ",
-                            vrLocations$Zip)
-               )
+      addTiles() %>%
+      setView(lng = -109.4282, lat = 47.0625, zoom = 6)
+  })
+  
+  # observer to dynamically update vrLocations being displayed
+  observe({
+    proxy <- leafletProxy("vrMap", data=filteredData())
+    proxy %>% clearMarkers()
+    proxy %>%  addAwesomeMarkers(
+                          data=vrLocations,
+                          ~Longitude,~Latitude, 
+                          icon=vrLocationIcons,
+                          popup= paste("<b>",
+                          vrLocations$Name,
+                          "</b><br>",
+                          vrLocations$Address,
+                          "<br>",
+                          vrLocations$City,
+                          "MT ",
+                          vrLocations$Zip))
+      
   })
 }
 
