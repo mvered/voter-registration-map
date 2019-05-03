@@ -116,11 +116,17 @@ ui <- fluidPage (theme=shinytheme("flatly"),
   ),
   tabPanel("Registration Gaps",
            sidebarLayout(
-             sidebarPanel("Hello World"),
+             sidebarPanel(
+               radioButtons(inputId="dataLayer",
+                            label="Data to Visualize:",
+                            choices=list("All Voters",
+                                    "Young People",
+                                     "Native Americans"))
+             ),
              mainPanel(      # Ouput: Tabset
                tabsetPanel(type='tabs',
                            tabPanel("Map",leafletOutput(outputId="gapMap",height=550)),
-                           tabPanel("List","Hello World")
+                           tabPanel("Data",dataTableOutput(outputId="countyTable"))
                           )
                        )
            )
@@ -215,7 +221,7 @@ server <- function(input,output){
       markerColor = getIconColor(filteredData())
     )})
   
-  # table output
+  # table output for VR locations
   output$table = renderDataTable({select(vrLocations,
                                          Name,
                                          Address,
@@ -284,8 +290,33 @@ server <- function(input,output){
  #  observe({
  #  proxygapMap <- leafletProxy("gapMap")
 #   proxygapMap %>% addPolygons(fillColor=~pal(Active))})
-  
-  
+
+  # table output for county data
+  output$countyTable = renderDataTable(select(as.data.frame(counties),
+                                              County,
+                                              Active,
+                                              Inactive,
+                                              RegA_U35,
+                                              CVAP,
+                                              CVAP_Native_LOW,
+                                              CVAP_Native_HIGH,
+                                              VAP_U35_LOW,
+                                              VAP_U35_HIGH),
+                                 server=FALSE,
+                                 extensions = c("Buttons"),
+                                 options = list(order=list(0,'asc'),
+                                                dom='Bfrtip',
+                                                buttons=c('copy','csv','excel','pdf','print')),
+                                                colnames =c('County',
+                                                            'Registered Active',
+                                                            'Registered Inactive',
+                                                            'Under 35 Registered Active',
+                                                            'Citizen Voting-Age Population',
+                                                            'CVAP Native American Lower Bound',
+                                                            'CVAP Native American Upper Bound',
+                                                            'CVAP Under 35 Lower Bound',
+                                                            'CVAP Under 35 Upper Bound'),
+                                 rownames=FALSE)
   
 }
 
