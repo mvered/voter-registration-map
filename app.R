@@ -26,12 +26,38 @@ ui <- fluidPage (
                                          "MontPIRG",
                                          "Western Native Voice")
       ),
+      
+      # code to change slider bar display
+      # fills on right, from selected value to max, rather than default of min to selection
+      tags$head( tags$style( type = "text/css", '
+      .irs-line-mid{
+        background: #428bca ;
+        border: 1px solid #428bca ;
+      }
+      .irs-line-right{
+        background: #428bca ;
+      }
+      .irs-bar {
+        background: linear-gradient(to bottom, #DDD -50%, #FFF 150%);
+        border-top: 1px solid #CCC ;
+        border-bottom: 1px solid #CCC ;
+      }
+      .irs-bar-edge {
+        background: inherit ;
+        border: inherit ;
+      }
+
+    ')), 
+      
+      # creates slider bar input for frequency
       sliderTextInput(inputId="Frequency",
                   label="Frequency of Use",
                   grid=TRUE,
-                  choices = c("Annually","Monthly","Weekly","Continuously")
-        
+                  choices = c("Annually",
+                              "Monthly","Weekly","Continuously"),
       ),
+      
+      # creates checkbox input for type of VR location
       checkboxGroupInput(inputId="Types",
                          label="Location Types",
                          choices = list("Canvass",
@@ -67,9 +93,29 @@ server <- function(input,output){
   # load in VR location data
   vrLocations <- read.csv("voter-reg-locations.csv")
   
+  # Reactive expression to provide list of frequencies to subset to
+  frequencyList <- reactive({
+    if(input$Frequency=='Annually'){
+      c("Annually","Monthly","Weekly","Continuously")
+    }
+    else if(input$Frequency=='Monthly'){
+      c("Monthly","Weekly","Continuously")
+    }
+    else if(input$Frequency=='Weekly'){
+      c("Weekly","Continuously")
+    }
+    else{
+      c("Continuously")
+    }
+  })
+  
   # Reactive expression for data subsetted to what the user selected
   filteredData <- reactive({
-    vrLocations[vrLocations$Organization %in% input$Organizations, ]
+    vrLocations[
+      which(vrLocations$Organization %in% input$Organizations
+            & vrLocations$Type %in% input$Types
+            & vrLocations$Frequency %in% frequencyList()
+              ), ]
   })
   
   # set icon color depending on organization
