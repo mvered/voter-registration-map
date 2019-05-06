@@ -120,9 +120,9 @@ ui <- fluidPage (theme=shinytheme("flatly"),
                radioButtons(inputId="dataLayer",
                             label="Data to Visualize:",
                             choiceValues = list("Active",
-                                               "CVAP"),
-                            choiceNames = list("Registered Active Voters",
-                                                "CVAP"),
+                                               "Ratio_RegA_CVAP"),
+                            choiceNames = list("Total Registered Voters",
+                                               "Share of Citizen Voting Age Population (CVAP) that are Registered Active"),
                             selected = "Active")
              ),
              mainPanel(      # Ouput: Tabset
@@ -279,18 +279,22 @@ server <- function(input,output){
   counties <- geojsonio::geojson_read("county-data-simplified.geojson",what="sp")
   
   # colors for map polygons for chloropleth rendering
-  pal <- colorNumeric("viridis",NULL)
+  pal <- colorNumeric("Purples",NULL)
   
   # reactive map polygons
   countiesFiltered <- reactive({
     if(input$dataLayer=='Active'){
-      counties[,"Active"]
+      counties[,c("Active","Inactive")]
     }
     else if(input$dataLayer=='CVAP'){
-      counties[,"CVAP"]
+      counties[,c("CVAP","Total_Registered")]
     } 
+    else if(input$dataLayer=='Ratio_RegA_CVAP'){
+      counties[,c("Ratio_RegA_CVAP","CVAP")]
+    }
     })
-    
+  
+  
   # text output
   output$notes <- renderUI("test")
   
@@ -299,13 +303,59 @@ server <- function(input,output){
     leaflet(counties) %>%
       addTiles() %>%
       setView(lng = -109.4282, lat = 47.0625, zoom = 6) %>%
-      addPolygons(stroke = FALSE, smoothFactor = 0.3, fillOpacity = 1, fillColor=~pal(Active))
+      addPolygons(weight = 2,
+                  opacity = 1,
+                  fillOpacity = 0.8,
+                  color = "white",
+                  fillColor=~pal(Active), 
+                  highlight = highlightOptions(
+                    weight = 5,
+                    color="#666",
+                    bringToFront=TRUE),
+                  popup=paste("<b>",
+                              counties$County,
+                              "County </b><br>",
+                              "Active: ",
+                              counties$Active,
+                              "<br>Inactive: ",
+                              counties$Inactive)) %>%
+      addLegend("bottomright", 
+                    pal = pal, 
+                    values = ~Active,
+                    title = "Active",
+                    opacity=1)
   })
   
   #observer to dynamically update gap data being displayed on map
   observe({
     proxyGapMap <- leafletProxy("gapMap",data=countiesFiltered()) 
-    proxyGapMap %>% addPolygons(stroke = FALSE, smoothFactor = 0.3, fillOpacity = 1, fillColor=~pal(countiesFiltered()[[1]]))
+    proxyGapMap %>% clearControls()
+    proxyGapMap %>% 
+      addPolygons(weight = 2,
+                  opacity = 1,
+                  fillOpacity = 0.8,
+                  color = "white",
+                  fillColor=~pal(countiesFiltered()[[1]]), 
+                  highlight = highlightOptions(
+                    weight = 5,
+                    color="#666",
+                    bringToFront=TRUE),
+                  popup=paste("<b>",
+                              counties$County,
+                              "County </b><br>",
+                              names(countiesFiltered()[1]),
+                              ": ",
+                              countiesFiltered()[[1]],
+                              "<br>",
+                              names(countiesFiltered()[2]),
+                              ": ",
+                              countiesFiltered()[[2]]
+                             )         
+                )
+    proxyGapMap %>% addLegend("bottomright", 
+                  pal = pal, 
+                  values = ~countiesFiltered()[[1]],
+                  title = names(countiesFiltered()[1]))
     })
 
   # table output for county data
