@@ -119,14 +119,17 @@ ui <- fluidPage (theme=shinytheme("flatly"),
              sidebarPanel(
                radioButtons(inputId="dataLayer",
                             label="Data to Visualize:",
-                            choices=list("All Voters",
-                                    "Young People",
-                                     "Native Americans"))
+                            choiceValues = list("Active",
+                                               "CVAP"),
+                            choiceNames = list("Registered Active Voters",
+                                                "CVAP"),
+                            selected = "Active")
              ),
              mainPanel(      # Ouput: Tabset
                tabsetPanel(type='tabs',
                            tabPanel("Map",leafletOutput(outputId="gapMap",height=550)),
-                           tabPanel("Data",dataTableOutput(outputId="countyTable"))
+                           tabPanel("Data",dataTableOutput(outputId="countyTable")),
+                           tabPanel("Notes on Data",uiOutput(outputId="notes"))
                           )
                        )
            )
@@ -278,18 +281,32 @@ server <- function(input,output){
   # colors for map polygons for chloropleth rendering
   pal <- colorNumeric("viridis",NULL)
   
+  # reactive map polygons
+  countiesFiltered <- reactive({
+    if(input$dataLayer=='Active'){
+      counties[,"Active"]
+    }
+    else if(input$dataLayer=='CVAP'){
+      counties[,"CVAP"]
+    } 
+    })
+    
+  # text output
+  output$notes <- renderUI("test")
+  
   # generate map output for vr gaps
   output$gapMap <-renderLeaflet({
     leaflet(counties) %>%
       addTiles() %>%
       setView(lng = -109.4282, lat = 47.0625, zoom = 6) %>%
-      addPolygons(stroke = FALSE, smoothFactor = 0.3, fillOpacity = 1,fillColor=~pal(Active))
+      addPolygons(stroke = FALSE, smoothFactor = 0.3, fillOpacity = 1, fillColor=~pal(Active))
   })
   
-  # observer to dynamically update gap data being displayed on map
- #  observe({
- #  proxygapMap <- leafletProxy("gapMap")
-#   proxygapMap %>% addPolygons(fillColor=~pal(Active))})
+  #observer to dynamically update gap data being displayed on map
+  observe({
+    proxyGapMap <- leafletProxy("gapMap",data=countiesFiltered()) 
+    proxyGapMap %>% addPolygons(stroke = FALSE, smoothFactor = 0.3, fillOpacity = 1, fillColor=~pal(countiesFiltered()[[1]]))
+    })
 
   # table output for county data
   output$countyTable = renderDataTable(select(as.data.frame(counties),
