@@ -379,7 +379,7 @@ server <- function(input,output,session){
   
   
   # text output
-  output$notes <- renderUI("test")
+  output$notes <- renderUI("Placeholder")
   
   # generate map output for vr gaps
   output$gapMap <-renderLeaflet({
