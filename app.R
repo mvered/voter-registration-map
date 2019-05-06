@@ -120,10 +120,35 @@ ui <- fluidPage (theme=shinytheme("flatly"),
                radioButtons(inputId="dataLayer",
                             label="Data to Visualize:",
                             choiceValues = list("Active",
-                                               "Ratio_RegA_CVAP"),
+                                               "Ratio_RegA_CVAP",
+                                               "CVAP_Native_HIGH",
+                                               "CVAP_Share_Native_HIGH",
+                                               "VAP_U35_HIGH",
+                                               "VAP_Share_U35_HIGH",
+                                               "NotRegA_U35_High"),
                             choiceNames = list("Total Registered Voters",
-                                               "Share of Citizen Voting Age Population (CVAP) that are Registered Active"),
-                            selected = "Active")
+                                               "Share of CVAP that are Registered Active",
+                                               "Total CVAP Native Population",
+                                               "Share of CVAP that are Native",
+                                               "Total CVAP Young People",
+                                               "Share CVAP that are Young People",
+                                               "Total Unregistered or Inactive Young People"
+                                               ),
+                            selected = "Active"),
+               HTML("<br><br><b><i>"),
+               "Note 1: ",
+               HTML("</i></b>"),
+               "CVAP = Citizen Voting-Age Population",
+               HTML("<br><br><b><i>"),
+               "Note 2: ",
+               HTML("</i></b>"),
+               "Young People = Ages 18 to 34 (for the purposes of this analysis)",
+               HTML("<br><br><b><i>"),
+               "Note 3: ",
+               HTML("</i></b>"),
+               "CVAP data here comes from the American Community Survey from the US Census bureau. 
+               Due to small sample sizes, for sub-populations such as young people or Native Americans, there is a good amount of uncertainty in the estimates. 
+               Because this, each data layer that draws on CVAP data for Native Americans or young people is presented using lower and upper bounds for the population size, rather than a single number."
              ),
              mainPanel(      # Ouput: Tabset
                tabsetPanel(type='tabs',
@@ -292,6 +317,21 @@ server <- function(input,output){
     else if(input$dataLayer=='Ratio_RegA_CVAP'){
       counties[,c("Ratio_RegA_CVAP","CVAP")]
     }
+    else if(input$dataLayer=='CVAP_Native_HIGH'){
+      counties[,c("CVAP_Native_HIGH","CVAP_Native_LOW")]
+    }
+    else if(input$dataLayer=='CVAP_Share_Native_HIGH'){
+      counties[,c("CVAP_Share_Native_HIGH","CVAP_Share_Native_LOW")]
+    }
+    else if(input$dataLayer=='VAP_U35_HIGH'){
+      counties[,c("VAP_U35_HIGH","VAP_U35_LOW")]
+    }
+    else if(input$dataLayer=='VAP_Share_U35_HIGH'){
+      counties[,c("VAP_Share_U35_HIGH","VAP_Share_U35_LOW")]
+    }
+    else if(input$dataLayer=='NotRegA_U35_High'){
+      counties[,c("NotRegA_U35_High","NotRegA_U35_LOW")]
+    }
     })
   
   
@@ -312,24 +352,27 @@ server <- function(input,output){
                     weight = 5,
                     color="#666",
                     bringToFront=TRUE),
+                  label=counties$County,
                   popup=paste("<b>",
                               counties$County,
-                              "County </b><br>",
-                              "Active: ",
+                              " County </b><br>",
+                              "<i>Active: </i>",
                               counties$Active,
-                              "<br>Inactive: ",
-                              counties$Inactive)) %>%
+                              "<br><i>Inactive: </i>",
+                              counties$Inactive,
+                              sep='')) %>%
       addLegend("bottomright", 
                     pal = pal, 
                     values = ~Active,
                     title = "Active",
-                    opacity=1)
+                    opacity=1)  
   })
   
   #observer to dynamically update gap data being displayed on map
   observe({
     proxyGapMap <- leafletProxy("gapMap",data=countiesFiltered()) 
     proxyGapMap %>% clearControls()
+    proxyGapMap %>% clearPopups()
     proxyGapMap %>% 
       addPolygons(weight = 2,
                   opacity = 1,
@@ -340,16 +383,18 @@ server <- function(input,output){
                     weight = 5,
                     color="#666",
                     bringToFront=TRUE),
+                  label=counties$County,
                   popup=paste("<b>",
                               counties$County,
-                              "County </b><br>",
+                              " County</b><br><i>",
                               names(countiesFiltered()[1]),
-                              ": ",
+                              ": </i>",
                               countiesFiltered()[[1]],
-                              "<br>",
+                              "<br><i>",
                               names(countiesFiltered()[2]),
-                              ": ",
-                              countiesFiltered()[[2]]
+                              ": </i>",
+                              countiesFiltered()[[2]],
+                              sep=''
                              )         
                 )
     proxyGapMap %>% addLegend("bottomright", 
