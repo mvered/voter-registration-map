@@ -117,8 +117,13 @@ ui <- fluidPage (theme=shinytheme("flatly"),
   tabPanel("Registration Gaps",
            sidebarLayout(
              sidebarPanel(
+               selectInput(inputId="dataCategory",label="I want to learn more about...",
+                           choices=list("All Registered/Unregistered Voters",
+                                            "Native American Populations",
+                                            "Youth Voter Registration Gaps"),
+                           selected="All"),
                radioButtons(inputId="dataLayer",
-                            label="Data to Visualize:",
+                            label="Show me:",
                             choiceValues = list("Active",
                                                "Ratio_RegA_CVAP",
                                                "CVAP_Native_HIGH",
@@ -166,7 +171,7 @@ ui <- fluidPage (theme=shinytheme("flatly"),
 )
 
 # Define server logic for app
-server <- function(input,output){
+server <- function(input,output,session){
   
   # load in VR location data
   vrLocations <- read.csv("voter-reg-locations.csv")
@@ -299,6 +304,44 @@ server <- function(input,output){
                           filteredData()$Zip))
       
   })
+  
+  # dynamically update choices for dataLayers
+  observeEvent(input$dataCategory,{
+    selectedChoiceNames <- { 
+      if(input$dataCategory=='All Registered/Unregistered Voters'){
+        list("Total Registered Voters",
+            "Share of CVAP that are Registered Active")
+      }
+      else if(input$dataCategory=='Native American Populations'){
+        list("Total CVAP Native Population",
+             "Share of CVAP that are Native")
+      }
+      else if(input$dataCategory=='Youth Voter Registration Gaps'){
+      list("Total CVAP Young People",
+      "Share CVAP that are Young People",
+      "Total Unregistered or Inactive Young People")
+      }
+    }
+    
+    selectedChoiceValues <- { 
+        if(input$dataCategory=='All Registered/Unregistered Voters'){
+          list("Active",
+               "Ratio_RegA_CVAP")
+        }
+        else if(input$dataCategory=='Native American Populations'){
+          list("CVAP_Native_HIGH",
+               "CVAP_Share_Native_HIGH")
+        }
+        else if(input$dataCategory=='Youth Voter Registration Gaps'){
+          list("VAP_U35_HIGH",
+               "VAP_Share_U35_HIGH",
+               "NotRegA_U35_High")
+        }
+      }
+
+    updateRadioButtons(session, inputId="dataLayer", choiceValues = selectedChoiceValues, choiceNames = selectedChoiceNames)
+  })
+  
   
   # load in county level voter registration and population data
   counties <- geojsonio::geojson_read("county-data-simplified.geojson",what="sp")
