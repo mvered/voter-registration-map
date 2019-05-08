@@ -133,33 +133,36 @@ ui <- fluidPage (theme=shinytheme("flatly"),
                                                "NotRegA_U35_High"),
                             choiceNames = list("Total Registered Voters",
                                                "Share of CVAP that are Registered Active",
-                                               "Total CVAP Native Population",
-                                               "Share of CVAP that are Native",
-                                               "Total CVAP Young People",
-                                               "Share CVAP that are Young People",
-                                               "Total Unregistered or Inactive Young People"
+                                               "Native American CVAP",
+                                               "Share of CVAP that are Native American",
+                                               "CVAP Under 35",
+                                               "Share of Total CVAP that are Under 35",
+                                               "Unregistered or Inactive CVAP Under 35"
                                                ),
-                            selected = "Active"),
-               HTML("<br><br><b><i>"),
-               "Note 1: ",
-               HTML("</i></b>"),
-               "CVAP = Citizen Voting-Age Population",
-               HTML("<br><br><b><i>"),
-               "Note 2: ",
-               HTML("</i></b>"),
-               "Young People = Ages 18 to 34 (for the purposes of this analysis)",
-               HTML("<br><br><b><i>"),
-               "Note 3: ",
-               HTML("</i></b>"),
-               "CVAP data here comes from the American Community Survey from the US Census bureau. 
-               Due to small sample sizes, for sub-populations such as young people or Native Americans, there is a good amount of uncertainty in the estimates. 
-               Because this, each data layer that draws on CVAP data for Native Americans or young people is presented using lower and upper bounds for the population size, rather than a single number."
-             ),
+                            selected = "Active")),
              mainPanel(      # Ouput: Tabset
                tabsetPanel(type='tabs',
                            tabPanel("Map",leafletOutput(outputId="gapMap",height=550)),
                            tabPanel("Data",dataTableOutput(outputId="countyTable")),
-                           tabPanel("Notes on Data",uiOutput(outputId="notes"))
+                           tabPanel("Notes on Data",
+                                    HTML("<br><br><b><i>"),
+                                    "Note 1: ",
+                                    HTML("</i></b>"),
+                                    "CVAP = Citizen Voting-Age Population",
+                                    HTML("<br><br><b><i>"),
+                                    "Note 2: ",
+                                    HTML("</i></b>"),
+                                    "Young People = Ages 18 to 34 (for the purposes of this analysis)",
+                                    HTML("<br><br><b><i>"),
+                                    "Note 3: ",
+                                    HTML("</i></b>"),
+                                    "CVAP data here comes from the American Community Survey from the US Census bureau. 
+               Due to small sample sizes, for sub-populations such as young people or Native Americans, there is a good amount of uncertainty in the estimates. 
+               Because this, each data layer that draws on CVAP data for Native Americans or young people is presented using lower and upper bounds for the population size, rather than a single number.
+                                    The upper and lower bounds represent a 90% confidence interval for the estimate."
+                                    
+                                    
+                                    )
                           )
                        )
            )
@@ -310,16 +313,16 @@ server <- function(input,output,session){
     selectedChoiceNames <- { 
       if(input$dataCategory=='All Registered/Unregistered Voters'){
         list("Total Registered Voters",
-            "Share of CVAP that are Registered Active")
+             "Share of CVAP that are Registered Active")
       }
       else if(input$dataCategory=='Native American Populations'){
-        list("Total CVAP Native Population",
-             "Share of CVAP that are Native")
+        list("Native American CVAP",
+             "Share of CVAP that are Native American")
       }
       else if(input$dataCategory=='Youth Voter Registration Gaps'){
-      list("Total CVAP Young People",
-      "Share CVAP that are Young People",
-      "Total Unregistered or Inactive Young People")
+      list("CVAP Under 35",
+           "Share of Total CVAP that are Under 35",
+           "Unregistered or Inactive CVAP Under 35")
       }
     }
     
@@ -377,10 +380,6 @@ server <- function(input,output,session){
     }
     })
   
-  
-  # text output
-  output$notes <- renderUI("Placeholder")
-  
   # generate map output for vr gaps
   output$gapMap <-renderLeaflet({
     leaflet(counties) %>%
@@ -398,11 +397,11 @@ server <- function(input,output,session){
                   label=counties$County,
                   popup=paste("<b>",
                               counties$County,
-                              " County </b><br>",
-                              "<i>Active: </i>",
-                              counties$Active,
-                              "<br><i>Inactive: </i>",
-                              counties$Inactive,
+                              " County</b>",
+                              "<br><i>Registered Active: </i>",
+                              formatC(countiesFiltered()[[1]],format="d",big.mark=","),
+                              "<br><i>Registered Inactive: </i>",
+                              formatC(countiesFiltered()[[2]],format="d",big.mark=","),
                               sep='')) %>%
       addLegend("bottomright", 
                     pal = pal, 
@@ -410,6 +409,90 @@ server <- function(input,output,session){
                     title = "Active",
                     opacity=1)  
   })
+  
+  # dynamic labels
+  countyPopups <- reactive({ 
+    if(input$dataLayer=='CVAP'){
+      paste("<b>",
+            counties$County,
+            " County</b>",
+            "<br><i>Total CVAP: </i>",
+            countiesFiltered()[[1]],
+            sep=''
+      )
+    }
+    else if(input$dataLayer=='Active'){
+      paste("<b>",
+            counties$County,
+            " County</b>",
+            "<br><i>Registered Active: </i>",
+            formatC(countiesFiltered()[[1]],format="d",big.mark=","),
+            "<br><i>Registered Inactive: </i>",
+            formatC(countiesFiltered()[[2]],format="d",big.mark=","),
+            sep=''
+      )
+    } 
+    else if(input$dataLayer=='Ratio_RegA_CVAP'){
+      paste("<b>",
+            counties$County,
+            " County</b>",
+            "<br>Est. ",
+            round((countiesFiltered()[[1]])*100,digits=0),
+            "% of citizens 18+ are registered active",
+            sep=''
+      )
+    }
+    else if(input$dataLayer=='CVAP_Native_HIGH'){
+      paste("<b>",
+            counties$County,
+            " County</b><br>Between ",
+            formatC(countiesFiltered()[[2]],format="d",big.mark=","),
+            " to ",
+            formatC(countiesFiltered()[[1]],format="d",big.mark=","),
+            " Native American citizens 18+",
+            sep='')
+    }
+    else if(input$dataLayer=='CVAP_Share_Native_HIGH'){
+      paste("<b>",
+            counties$County,
+            " County</b><br>Between ",
+            round((countiesFiltered()[[2]])*100,digits=0),
+            "-",
+            round((countiesFiltered()[[1]])*100,digits=0),
+            "% of citizens 18+ are Native American",
+            sep='')
+    }
+    else if(input$dataLayer=='VAP_U35_HIGH'){
+      paste("<b>",
+            counties$County,
+            " County</b><br>Between ",
+            formatC(countiesFiltered()[[2]],format="d",big.mark=","),
+            " to ",
+            formatC(countiesFiltered()[[1]],format="d",big.mark=","),
+            " citizens 18 to 34",
+            sep='')
+    }
+    else if(input$dataLayer=='VAP_Share_U35_HIGH'){
+      paste("<b>",
+            counties$County,
+            " County</b><br>Between ",
+            round((countiesFiltered()[[2]])*100,digits=0),
+            "-",
+            round((countiesFiltered()[[1]])*100,digits=0),
+            "% of voting-age citizens are 18-34",
+            sep='')
+    }
+    else if(input$dataLayer=='NotRegA_U35_High'){
+      paste("<b>",
+            counties$County,
+            " County</b><br>",
+            formatC(countiesFiltered()[[2]],format="d",big.mark=","),
+            " to ",
+            formatC(countiesFiltered()[[1]],format="d",big.mark=","),
+            " unregistered/inactive 18-34 year-olds",
+            sep='')
+    }
+    })
   
   #observer to dynamically update gap data being displayed on map
   observe({
@@ -427,19 +510,9 @@ server <- function(input,output,session){
                     color="#666",
                     bringToFront=TRUE),
                   label=counties$County,
-                  popup=paste("<b>",
-                              counties$County,
-                              " County</b><br><i>",
-                              names(countiesFiltered()[1]),
-                              ": </i>",
-                              countiesFiltered()[[1]],
-                              "<br><i>",
-                              names(countiesFiltered()[2]),
-                              ": </i>",
-                              countiesFiltered()[[2]],
-                              sep=''
+                  popup=countyPopups()
                              )         
-                )
+                
     proxyGapMap %>% addLegend("bottomright", 
                   pal = pal, 
                   values = ~countiesFiltered()[[1]],
