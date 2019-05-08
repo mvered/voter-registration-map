@@ -119,25 +119,39 @@ ui <- fluidPage (theme=shinytheme("flatly"),
              sidebarPanel(
                selectInput(inputId="dataCategory",label="I want to learn more about...",
                            choices=list("All Registered/Unregistered Voters",
-                                            "Native American Populations",
-                                            "Youth Voter Registration Gaps"),
+                                            "Native American Voter Registration",
+                                            "Youth Voter Registration"),
                            selected="All"),
                radioButtons(inputId="dataLayer",
                             label="Show me:",
                             choiceValues = list("Active",
-                                               "Ratio_RegA_CVAP",
+                                               "Share_CVAP_RegA",
+                                               "Unreg_HIGH",
+                                               "Share_Absentee",
                                                "CVAP_Native_HIGH",
                                                "CVAP_Share_Native_HIGH",
+                                               "Unreg_Native_HIGH",
                                                "VAP_U35_HIGH",
                                                "VAP_Share_U35_HIGH",
-                                               "NotRegA_U35_High"),
+                                               "Youth_RegA_Share",
+                                               "Youth_RegI_Share",
+                                               "Gap_Share_U35_HIGH",
+                                               "NotRegA_U35_High",
+                                               "Youth_Share_Absentee"),
                             choiceNames = list("Total Registered Voters",
-                                               "Share of CVAP that are Registered Active",
-                                               "Native American CVAP",
-                                               "Share of CVAP that are Native American",
-                                               "CVAP Under 35",
-                                               "Share of Total CVAP that are Under 35",
-                                               "Unregistered or Inactive CVAP Under 35"
+                                               "Share of People Registered to Vote",
+                                               "Unregistered or Inactive Citizen Voting-Age Population",
+                                               "Share of Registered Voters on the Permanent Absentee List",
+                                               "Total Native American Population",
+                                               "Native American Share of Population",
+                                               "Unregistered or Inactive Native Americans",
+                                               "Total Youth Voting-Age Population",
+                                               "Youth Share of Voting-Age Population",
+                                               "Youth Share of Registered Active Voters",
+                                               "Youth Share of Registered Inactive Voters",
+                                               "Youth Voter Registration Gap",
+                                               "Unregistered or Inactive Young People",
+                                               "Share of Youth on the Permanent Absentee List"
                                                ),
                             selected = "Active")),
              mainPanel(      # Ouput: Tabset
@@ -313,32 +327,46 @@ server <- function(input,output,session){
     selectedChoiceNames <- { 
       if(input$dataCategory=='All Registered/Unregistered Voters'){
         list("Total Registered Voters",
-             "Share of CVAP that are Registered Active")
+             "Share of People Registered to Vote",
+             "Unregistered or Inactive Citizen Voting-Age Population",
+             "Share of Registered Voters on the Permanent Absentee List")
       }
-      else if(input$dataCategory=='Native American Populations'){
-        list("Native American CVAP",
-             "Share of CVAP that are Native American")
+      else if(input$dataCategory=='Native American Voter Registration'){
+        list("Total Native American Population",
+             "Native American Share of Population",
+             "Unregistered or Inactive Native Americans")
       }
-      else if(input$dataCategory=='Youth Voter Registration Gaps'){
-      list("CVAP Under 35",
-           "Share of Total CVAP that are Under 35",
-           "Unregistered or Inactive CVAP Under 35")
+      else if(input$dataCategory=='Youth Voter Registration'){
+      list("Total Youth Voting-Age Population",
+           "Youth Share of Voting-Age Population",
+           "Youth Share of Registered Active Voters",
+           "Youth Share of Registered Inactive Voters",
+           "Youth Voter Registration Gap",
+           "Unregistered or Inactive Young People",
+           "Share of Youth on the Permanent Absentee List")
       }
     }
-    
+
     selectedChoiceValues <- { 
         if(input$dataCategory=='All Registered/Unregistered Voters'){
           list("Active",
-               "Ratio_RegA_CVAP")
+               "Share_CVAP_RegA",
+               "Unreg_HIGH",
+               "Share_Absentee")
         }
-        else if(input$dataCategory=='Native American Populations'){
+        else if(input$dataCategory=='Native American Voter Registration'){
           list("CVAP_Native_HIGH",
-               "CVAP_Share_Native_HIGH")
+               "CVAP_Share_Native_HIGH",
+               "Unreg_Native_HIGH")
         }
-        else if(input$dataCategory=='Youth Voter Registration Gaps'){
+        else if(input$dataCategory=='Youth Voter Registration'){
           list("VAP_U35_HIGH",
                "VAP_Share_U35_HIGH",
-               "NotRegA_U35_High")
+               "Youth_RegA_Share",
+               "Youth_RegI_Share",
+               "Gap_Share_U35_HIGH",
+               "NotRegA_U35_High",
+               "Youth_Share_Absentee")
         }
       }
 
@@ -360,8 +388,8 @@ server <- function(input,output,session){
     else if(input$dataLayer=='CVAP'){
       counties[,c("CVAP","Total_Registered")]
     } 
-    else if(input$dataLayer=='Ratio_RegA_CVAP'){
-      counties[,c("Ratio_RegA_CVAP","CVAP")]
+    else if(input$dataLayer=='Share_CVAP_RegA'){
+      counties[,c("Share_CVAP_RegA","CVAP")]
     }
     else if(input$dataLayer=='CVAP_Native_HIGH'){
       counties[,c("CVAP_Native_HIGH","CVAP_Native_LOW")]
@@ -377,6 +405,27 @@ server <- function(input,output,session){
     }
     else if(input$dataLayer=='NotRegA_U35_High'){
       counties[,c("NotRegA_U35_High","NotRegA_U35_LOW")]
+    }
+    else if(input$dataLayer=='Unreg_HIGH'){
+      counties[,c("Unreg_HIGH","Unreg_LOW")]
+    }
+    else if(input$dataLayer=='Share_Absentee'){
+      counties[,c('Share_Absentee','Active','Inactive')]
+    }
+    else if(input$dataLayer=='Youth_RegA_Share'){
+      counties[,c('Youth_RegA_Share','VAP_Share_U35_LOW','VAP_Share_U35_HIGH')]
+    }
+    else if(input$dataLayer=='Youth_RegI_Share'){
+      counties[,c('Youth_RegI_Share','VAP_Share_U35_LOW','VAP_Share_U35_HIGH')]
+    }
+    else if(input$dataLayer=='Gap_Share_U35_HIGH'){
+      counties[,c('Gap_Share_U35_HIGH','Gap_Share_U35_LOW')]
+    }
+    else if(input$dataLayer=='Youth_Share_Absentee'){
+      counties[,c('Youth_Share_Absentee','Share_Absentee')]
+    }
+    else if(input$dataLayer=='Unreg_Native_HIGH'){
+      counties[,c('Unreg_Native_HIGH','Unreg_Native_LOW')]
     }
     })
   
@@ -432,7 +481,7 @@ server <- function(input,output,session){
             sep=''
       )
     } 
-    else if(input$dataLayer=='Ratio_RegA_CVAP'){
+    else if(input$dataLayer=='Share_CVAP_RegA'){
       paste("<b>",
             counties$County,
             " County</b>",
@@ -485,17 +534,95 @@ server <- function(input,output,session){
     else if(input$dataLayer=='NotRegA_U35_High'){
       paste("<b>",
             counties$County,
-            " County</b><br>",
+            " County</b><br>Est. ",
             formatC(countiesFiltered()[[2]],format="d",big.mark=","),
             " to ",
             formatC(countiesFiltered()[[1]],format="d",big.mark=","),
             " unregistered/inactive 18-34 year-olds",
             sep='')
     }
+    
+    else if(input$dataLayer=='Unreg_HIGH'){
+      paste("<b>",
+            counties$County,
+            " County</b><br>Est. ",
+            formatC(countiesFiltered()[[2]],format="d",big.mark=","),
+            " to ",
+            formatC(countiesFiltered()[[1]],format="d",big.mark=","),
+            " unregistered/inactive citizens 18+",
+            sep='')
+    }
+    else if(input$dataLayer=='Share_Absentee'){
+      paste("<b>",
+            counties$County,
+            " County</b><br> ",
+            round((countiesFiltered()[[1]])*100,digits=0),
+            "% of registered voters are on the permanent absentee list <br>",
+            formatC(((countiesFiltered()[[2]])+(countiesFiltered()[[3]]))*countiesFiltered()[[1]],format="d",big.mark=","),
+            " total registered absentee voters",
+            sep='')
+    }
+    else if(input$dataLayer=='Youth_RegA_Share'){
+      paste("<b>",
+            counties$County,
+            " County</b><br>",
+            round((countiesFiltered()[[1]])*100,digits=0),
+            "% of registered <i>active</i> voters are 18-34",
+            "<br> By comparison, young people make up ",
+            round((countiesFiltered()[[2]])*100,digits=0),
+            "-",
+            round((countiesFiltered()[[3]])*100,digits=0),
+            "% of voting-age citizens",
+            sep='')
+    }
+    else if(input$dataLayer=='Youth_RegI_Share'){
+      paste("<b>",
+            counties$County,
+            " County</b><br>",
+            round((countiesFiltered()[[1]])*100,digits=0),
+            "% of registered <i>inactive</i> voters are 18-34",
+            "<br> By comparison, young people make up ",
+            round((countiesFiltered()[[2]])*100,digits=0),
+            "-",
+            round((countiesFiltered()[[3]])*100,digits=0),
+            "% of voting-age citizens",
+            sep='')
+    }
+    else if(input$dataLayer=='Gap_Share_U35_HIGH'){
+      paste("<b>",
+            counties$County,
+            " County</b><br>",
+            round((countiesFiltered()[[2]])*100,digits=0),
+            "-",
+            round((countiesFiltered()[[1]])*100,digits=0),
+            "percentage point youth voter registration gap",
+            sep='')
+    }
+    else if(input$dataLayer=='Youth_Share_Absentee'){
+      paste("<b>",
+            counties$County,
+            " County</b><br>",
+            round((countiesFiltered()[[2]])*100,digits=0),
+            "% of young registered voters are signed up to vote absentee",
+            "<br>By comparison, ",
+            round((countiesFiltered()[[1]])*100,digits=0),
+            "% of all registered voters are signed up to vote absentee",
+            sep='')
+    }
+    else if(input$dataLayer=='Unreg_Native_HIGH'){
+      paste("<b>",
+            counties$County,
+            " County</b><br>Est. ",
+            formatC(countiesFiltered()[[2]],format="d",big.mark=","),
+            " to ",
+            formatC(countiesFiltered()[[1]],format="d",big.mark=","),
+            " unregistered/inactive Native American citizens 18+",
+            sep='')
+    }
     })
   
   #observer to dynamically update gap data being displayed on map
-  observe({
+  observeEvent(input$dataLayer, {
     proxyGapMap <- leafletProxy("gapMap",data=countiesFiltered()) 
     proxyGapMap %>% clearControls()
     proxyGapMap %>% clearPopups()
