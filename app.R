@@ -170,10 +170,31 @@ ui <- fluidPage (theme=shinytheme("flatly"),
                                     HTML("<br><br><b><i>"),
                                     "Note 3: ",
                                     HTML("</i></b>"),
-                                    "CVAP data here comes from the American Community Survey from the US Census bureau. 
-               Due to small sample sizes, for sub-populations such as young people or Native Americans, there is a good amount of uncertainty in the estimates. 
-               Because this, each data layer that draws on CVAP data for Native Americans or young people is presented using lower and upper bounds for the population size, rather than a single number.
-                                    The upper and lower bounds represent a 90% confidence interval for the estimate."
+                                    "Voter registration numbers (except for the number of registered Native American voters) come from voter file data provided by the Montana Secretary of State's  Office as of 5/1/2019. ",
+                                    HTML("<br><br><b><i>"),
+                                    "Note 4: ",
+                                    HTML("</i></b>"),
+                                    "Population estimates (i.e. estimates of CVAP) come from the American Community Survey from the US Census bureau. 
+               Due to small sample sizes, for sub-populations such as young people or Native Americans, there is some uncertainty in these estimates. 
+               Because this, each data layer showing population data for Native Americans or young people is presented using lower and upper bounds for the population size, rather than a single number.
+                                    The upper and lower bounds represent a 90% confidence interval for the population estimate provided by the Census bureau.",
+                                    HTML("<br><br><b><i>"),
+                                    "Note 5: ",
+                                    HTML("</i></b>"),
+                                    "Estimating the number of registered and unregistered Native Americans is challenging because of limitations on the data. 
+                                    These estimates, even when compared with population-level estimates of CVAP from the Census Bureau, contain a lot of uncertainty and should be taken
+                                    as extremely rough estimates, rather than numbers presented with a strong degree of precision. 
+                                    Unlike age, race is not listed on the voter file provided by the Secretary of State in Montana. In the absence of that information,
+                                    the number of registered voters in the state who are Native American is estimated using Catalist race models. These models
+                                    are known to be flawed. Comparing Catalist race models with self-reported race and ethncitity data collected by Montana Voices partners,
+                                    only about half of self-identified Native Americans were modeled to be Native American by the Catalist models. Most of the people who self-identified as
+                                    Native American but who were not identified that way by the Catalist race models were identified as white by the Catalist models.
+                                    In order to try to be more realistic about the degree of uncertainty in these estimates, the number of Native Americans who are registered to vote in each county
+                                    was calculated twice. First, using the Catalist models only. Second, using the self-reported data as a guide and doubling the number of 
+                                    Native American registered voters predicted by the Catalist models. Both these numbers were then compared with the upper and lower bounds from the Census bureau's population
+                                    estimates of the number of citizen voting-age Native Americans. Clicking on each county will display a range of estimates for the number of unregisted people who are Native American,
+                                    from the lowest number to the highest number that were produced using those series of calculations.
+                                    "
                                     
                                     
                                     )
