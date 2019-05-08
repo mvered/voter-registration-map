@@ -362,8 +362,7 @@ server <- function(input,output,session){
            "Youth Share of Voting-Age Population",
            "Youth Share of Registered Active Voters",
            "Youth Share of Registered Inactive Voters",
-           "Youth Voter Registration Gap",
-           "Unregistered or Inactive Young People",
+          "Unregistered or Inactive Young People",
            "Share of Youth on the Permanent Absentee List")
       }
     }
@@ -385,7 +384,6 @@ server <- function(input,output,session){
                "VAP_Share_U35_HIGH",
                "Youth_RegA_Share",
                "Youth_RegI_Share",
-               "Gap_Share_U35_HIGH",
                "NotRegA_U35_High",
                "Youth_Share_Absentee")
         }
@@ -440,7 +438,7 @@ server <- function(input,output,session){
       counties[,c('Youth_RegI_Share','VAP_Share_U35_LOW','VAP_Share_U35_HIGH')]
     }
     else if(input$dataLayer=='Gap_Share_U35_HIGH'){
-      counties[,c('Gap_Share_U35_HIGH','Gap_Share_U35_LOW')]
+      counties[,c('Gap_Share_U35_HIGH','Gap_Share_U35_LOW','Share_CVAP_RegA','VAP_Share_U35_LOW','VAP_Share_U35_HIGH')]
     }
     else if(input$dataLayer=='Youth_Share_Absentee'){
       counties[,c('Youth_Share_Absentee','Share_Absentee')]
@@ -578,7 +576,7 @@ server <- function(input,output,session){
             counties$County,
             " County</b><br> ",
             round((countiesFiltered()[[1]])*100,digits=0),
-            "% of registered voters are on the permanent absentee list <br>",
+            "% of registered voters are signed up to vote absentee<br>",
             formatC(((countiesFiltered()[[2]])+(countiesFiltered()[[3]]))*countiesFiltered()[[1]],format="d",big.mark=","),
             " total registered absentee voters",
             sep='')
@@ -616,7 +614,13 @@ server <- function(input,output,session){
             round((countiesFiltered()[[2]])*100,digits=0),
             "-",
             round((countiesFiltered()[[1]])*100,digits=0),
-            "percentage point youth voter registration gap",
+            " percentage point youth voter registration gap <br>",
+            round((countiesFiltered()[[3]])*100,digits=0),
+            "% of all citizens 18+ are registered active voters versus ",
+            round((countiesFiltered()[[4]])*100,digits=0),
+            "-",
+            round((countiesFiltered()[[5]])*100,digits=0),
+            "% of 18-34 year olds",
             sep='')
     }
     else if(input$dataLayer=='Youth_Share_Absentee'){
