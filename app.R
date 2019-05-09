@@ -125,6 +125,7 @@ ui <- fluidPage (theme=shinytheme("flatly"),
                radioButtons(inputId="dataLayer",
                             label="Show me:",
                             choiceValues = list("Active",
+                                                "Reg_Change_14_18",
                                                "Share_CVAP_RegA",
                                                "Unreg_HIGH",
                                                "Share_Absentee",
@@ -139,6 +140,7 @@ ui <- fluidPage (theme=shinytheme("flatly"),
                                                "NotRegA_U35_High",
                                                "Youth_Share_Absentee"),
                             choiceNames = list("Total Registered Voters",
+                                               "Change in Registered Voters from 2014 to 2018",
                                                "Share of People Registered to Vote",
                                                "Unregistered or Inactive Citizen Voting-Age Population",
                                                "Share of Registered Voters on the Permanent Absentee List",
@@ -348,6 +350,7 @@ server <- function(input,output,session){
     selectedChoiceNames <- { 
       if(input$dataCategory=='All Registered/Unregistered Voters'){
         list("Total Registered Voters",
+             "Change in Registered Voters from 2014 to 2018",
              "Share of People Registered to Vote",
              "Unregistered or Inactive Citizen Voting-Age Population",
              "Share of Registered Voters on the Permanent Absentee List")
@@ -370,6 +373,7 @@ server <- function(input,output,session){
     selectedChoiceValues <- { 
         if(input$dataCategory=='All Registered/Unregistered Voters'){
           list("Active",
+               "Reg_Change_14_18",
                "Share_CVAP_RegA",
                "Unreg_HIGH",
                "Share_Absentee")
@@ -404,8 +408,8 @@ server <- function(input,output,session){
     if(input$dataLayer=='Active'){
       counties[,c("Active","Inactive")]
     }
-    else if(input$dataLayer=='CVAP'){
-      counties[,c("CVAP","Total_Registered")]
+    else if(input$dataLayer=='Reg_Change_14_18'){
+      counties[,c('Reg_Change_14_18','Pop_Change_14_18')]
     } 
     else if(input$dataLayer=='Share_CVAP_RegA'){
       counties[,c("Share_CVAP_RegA","CVAP")]
@@ -480,15 +484,18 @@ server <- function(input,output,session){
   
   # dynamic labels
   countyPopups <- reactive({ 
-    if(input$dataLayer=='CVAP'){
+    if(input$dataLayer=='Reg_Change_14_18'){
       paste("<b>",
-            counties$County,
-            " County</b>",
-            "<br><i>Total CVAP: </i>",
-            countiesFiltered()[[1]],
-            sep=''
-      )
-    }
+              counties$County,
+              " County</b>",
+              "<br>From 2014 to 2018, there was <br><ul type=\"square\"><li>",
+              round((countiesFiltered()[[1]])*100,digits=0),
+              "% growth in the number of registered voters</li><li>",
+              round((countiesFiltered()[[2]])*100,digits=0),
+              "% overall population growth</li></ul>",
+              sep='')
+       
+     }
     else if(input$dataLayer=='Active'){
       paste("<b>",
             counties$County,
