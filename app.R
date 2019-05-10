@@ -184,16 +184,15 @@ ui <- fluidPage (theme=shinytheme("flatly"),
                                     "Note 5: ",
                                     HTML("</i></b>"),
                                     "Estimating the number of registered and unregistered Native Americans is challenging because of limitations on the data. 
-                                    These estimates, even when compared with population-level estimates of CVAP from the Census Bureau, contain a lot of uncertainty and should be taken
+                                    These estimates contain a high degree of uncertainty and should be taken
                                     as extremely rough estimates, rather than numbers presented with a strong degree of precision. 
                                     Unlike age, race is not listed on the voter file provided by the Secretary of State in Montana. In the absence of that information,
-                                    the number of registered voters in the state who are Native American is estimated using Catalist race models. These models
-                                    are known to be flawed. Comparing Catalist race models with self-reported race and ethncitity data collected by Montana Voices partners,
+                                    the number of registered voters in the state who are Native American is estimated using Catalist race models. Comparing Catalist race models with self-reported race and ethncitity data collected by Montana Voices partners,
                                     only about half of self-identified Native Americans were modeled to be Native American by the Catalist models. Most of the people who self-identified as
                                     Native American but who were not identified that way by the Catalist race models were identified as white by the Catalist models.
                                     In order to try to be more realistic about the degree of uncertainty in these estimates, the number of Native Americans who are registered to vote in each county
                                     was calculated twice. First, using the Catalist models only. Second, using the self-reported data as a guide and doubling the number of 
-                                    Native American registered voters predicted by the Catalist models. Both these numbers were then compared with the upper and lower bounds from the Census bureau's population
+                                    Native American registered voters predicted by the Catalist models. Both these numbers were then compared with the upper and lower bounds from the Census Bureau's population
                                     estimates of the number of citizen voting-age Native Americans. Clicking on each county will display a range of estimates for the number of unregisted people who are Native American,
                                     from the lowest number to the highest number that were produced using those series of calculations.
                                     "
