@@ -204,8 +204,12 @@ ui <- fluidPage (theme=shinytheme("flatly"),
            )
            
            
-  ),id = "navbar"
   ),
+  tabPanel("Missoula in Detail",
+           sidebarLayout(
+             sidebarPanel(),
+           mainPanel)),
+  id = "navbar",
   tags$footer("Created May 2019 by Michelle Vered for Montana Voices.")
 )
 
