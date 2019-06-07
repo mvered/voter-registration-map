@@ -205,13 +205,50 @@ ui <- fluidPage (theme=shinytheme("flatly"),
            
            
   ),
-  tabPanel("Missoula in Detail",
+  tabPanel("Missoula Detail",
            sidebarLayout(
-             sidebarPanel(),
-           mainPanel)),
+             sidebarPanel(
+               selectInput(inputId="missoulaDataCategory",label="I want to learn more about...",
+                           choices=list("Choice 1",
+                                        "Choice 2"),
+                           selected="Choice 1"),
+               radioButtons(inputId="missoulaDataLayer",
+                            label="Show me:",
+                            choiceValues = list("Num_Registrants",
+                                                "Total_CVAP",
+                                                "Total_Under35",
+                                                "Share_Under35",
+                                                "Share_students",
+                                                "Share_pop_moved_in_last_year",
+                                                "POC",
+                                                "AIAN"),
+                            choiceNames = list("Number of Partner Registrants 2016-2018",
+                                                "Total Citizen Voting Age Population",
+                                               "Total 18-34 population",
+                                               "Share of adults that are 18-34",
+                                               "Share of adults that are students",
+                                               "Share of adults that moved in the last year",
+                                               "Share of CVAP who are people of color",
+                                               "Share of CVAP who are Native American"
+                            ),
+                            selected = NULL)),
+             mainPanel(      # Ouput: Tabset
+               tabsetPanel(type='tabs',
+                           tabPanel("Missoula Map",leafletOutput(outputId="missoulaMap",height=550)),
+                           tabPanel("Missoula Data",dataTableOutput(outputId="missoulaData")),
+                           tabPanel("Notes on Data"
+                                    
+                                    
+                           )
+               )
+             )
+           )
+           
+           
+  ),
   id = "navbar",
   tags$footer("Created May 2019 by Michelle Vered for Montana Voices.")
-)
+))
 
 # Define server logic for app
 server <- function(input,output,session){
@@ -707,6 +744,69 @@ server <- function(input,output,session){
                                                             'CVAP Under 35 Lower Bound',
                                                             'CVAP Under 35 Upper Bound'),
                                  rownames=FALSE)
+  # load data for Missoula 
+  missoulaCensus <- geojsonio::geojson_read("missoula-census.geojson",what="sp")
+  
+  # generate map output for missoula data
+  output$missoulaMap <-renderLeaflet({
+    leaflet(missoulaCensus) %>%
+      addTiles() %>%
+      setView(lng = -113.9997052, lat = 46.867528, zoom = 13) 
+  })
+  
+  # reactive map polygons for Missoula
+  missoulaDataFiltered <- reactive({
+    if(input$missoulaDataLayer=='Total_CVAP'){
+      missoulaCensus[,c('Total_CVAP')]
+    }
+    else if(input$missoulaDataLayer=='Num_Registrants'){
+      missoulaCensus[,c('Num_Registrants')]
+    } 
+    else if(input$missoulaDataLayer=='Share_students'){
+      missoulaCensus[,c('Share_students')]
+    }
+    else if(input$missoulaDataLayer=='Share_pop_moved_in_last_year'){
+      missoulaCensus[,c('Share_pop_moved_in_last_year')]
+    }
+    else if(input$missoulaDataLayer=='POC'){
+      missoulaCensus[,c('POC')]
+    }
+    else if(input$missoulaDataLayer=='AIAN'){
+      missoulaCensus[,c('AIAN')]
+    }
+    else if(input$missoulaDataLayer=='Total_Under35'){
+      missoulaCensus[,c('Total_Under35')]
+    }
+    else if(input$missoulaDataLayer=='Share_Under35'){
+      missoulaCensus[,c('Share_Under35')]
+    }
+  })
+  
+  # observer to change layers as needed
+  observe({
+    proxyMissoulaMap <- leafletProxy("missoulaMap",data=missoulaDataFiltered()) 
+    proxyMissoulaMap %>% clearControls()
+    proxyMissoulaMap %>% clearPopups()
+    proxyMissoulaMap %>% clearShapes()
+    proxyMissoulaMap %>% 
+        addPolygons(weight = 2,
+                    opacity = 1,
+                    fillOpacity = 0.6,
+                    color = "white",
+                    fillColor=~pal(missoulaDataFiltered()[[1]]), 
+                    highlight = highlightOptions(
+                      weight = 5,
+                      color="#666",
+                      bringToFront=TRUE),
+                    label=missoulaCensus$GEOID
+        )         
+      
+    proxyMissoulaMap %>% addLegend("bottomright", 
+                                pal = pal, 
+                                values = ~missoulaDataFiltered()[[1]],
+                                title = names(missoulaDataFiltered()[1]))
+  })
+  
   
 }
 
