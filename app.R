@@ -208,10 +208,10 @@ ui <- fluidPage (theme=shinytheme("flatly"),
   tabPanel("Missoula Detail",
            sidebarLayout(
              sidebarPanel(
-               selectInput(inputId="missoulaDataCategory",label="I want to learn more about...",
-                           choices=list("Choice 1",
-                                        "Choice 2"),
-                           selected="Choice 1"),
+               selectInput(inputId="missoulaDataCategory",label="Data sets by",
+                           choices=list("Census Block Group",
+                                        "Precinct"),
+                           selected="Census Block Group"),
                radioButtons(inputId="missoulaDataLayer",
                             label="Show me:",
                             choiceValues = list("Num_Registrants",
@@ -717,7 +717,8 @@ server <- function(input,output,session){
                   values = ~countiesFiltered()[[1]],
                   title = names(countiesFiltered()[1]))
     })
-
+  
+  
   # table output for county data
   output$countyTable = renderDataTable(select(as.data.frame(counties),
                                               County,
@@ -782,6 +783,78 @@ server <- function(input,output,session){
     }
   })
   
+  # dynamic labels
+  missoulaPopups <- reactive({ 
+    if(input$missoulaDataLayer=='Total_CVAP'){
+      paste("<b>Block Group: ",
+            missoulaCensus$GEOID,
+            "</b><br>",
+            "Total Citizen Voting Age Population: ",
+            formatC(missoulaDataFiltered()[[1]],format="d",big.mark=","),
+            sep='')
+      
+    }
+    else if(input$missoulaDataLayer=='Num_Registrants'){
+      paste("<b>Block Group: ",
+            missoulaCensus$GEOID,
+            "</b><br>",
+            formatC(missoulaDataFiltered()[[1]],format="d",big.mark=","),
+            " people were registered by partner organizations from 2016-2018",
+            sep=''
+      )
+    } 
+    else if(input$missoulaDataLayer=='Share_students'){
+      paste("<b>Block Group: ",
+            missoulaCensus$GEOID,
+            "</b><br>",
+            round((missoulaDataFiltered()[[1]])*100,digits=0),
+            "% of adults are students",
+            sep=''
+      )
+    }
+    else if(input$missoulaDataLayer=='Share_pop_moved_in_last_year'){
+      paste("<b>Block Group: ",
+            missoulaCensus$GEOID,
+            "</b><br>",
+            round((missoulaDataFiltered()[[1]])*100,digits=0),
+            "% of adults moved in the last year",
+            sep='')
+    }
+    else if(input$missoulaDataLayer=='POC'){
+      paste("<b>Block Group: ",
+            missoulaCensus$GEOID,
+            "</b><br>",
+            round((missoulaDataFiltered()[[1]])*100,digits=0),
+            "% of citizens 18+ are people of color",
+            sep='')
+    }
+    else if(input$missoulaDataLayer=='AIAN'){
+      paste("<b>Block Group: ",
+            missoulaCensus$GEOID,
+            "</b><br>",
+            round((missoulaDataFiltered()[[1]])*100,digits=0),
+            "% of citizens 18+ are Native American",
+            sep='')
+    }
+    else if(input$missoulaDataLayer=='Share_Under35'){
+      paste("<b>Block Group: ",
+            missoulaCensus$GEOID,
+            "</b><br>",
+            round((missoulaDataFiltered()[[1]])*100,digits=0),
+            "% of adults are under 35",
+            sep='')
+    }
+    else if(input$missoulaDataLayer=='Total_Under35'){
+      paste("<b>Block Group: ",
+            missoulaCensus$GEOID,
+            "</b><br>",
+            formatC(missoulaDataFiltered()[[1]],format="d",big.mark=","),
+            " people ages 18 to 34",
+            sep='')
+    }
+  
+  })
+  
   # observer to change layers as needed
   observe({
     proxyMissoulaMap <- leafletProxy("missoulaMap",data=missoulaDataFiltered()) 
@@ -798,7 +871,8 @@ server <- function(input,output,session){
                       weight = 5,
                       color="#666",
                       bringToFront=TRUE),
-                    label=missoulaCensus$GEOID
+                    label=missoulaCensus$GEOID,
+                    popup=missoulaPopups()
         )         
       
     proxyMissoulaMap %>% addLegend("bottomright", 
